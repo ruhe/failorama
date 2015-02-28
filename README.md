@@ -4,6 +4,7 @@ Failorama is for building reports from Jenkins builds. There are
 two types of reports:
 
 1. ISO build report
+
    These type of reports download data from specified upstream jobs and
    corresponding downstream jobs. The result is is displayed in html table:
 
@@ -13,6 +14,7 @@ two types of reports:
    |     2/FAIL     |        N/A        |        N/A        |
 
 2. Staging build reports
+
    Download information about failed builds from specific jobs and
    crawl linked LP bugs. For each failed build display: build number,
    linked bug title, bug status, bug assignee, target projects.

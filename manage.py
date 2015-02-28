@@ -10,7 +10,7 @@ from jenkins_reporting.extensions import db as flask_db
 
 
 def _create_app():
-    conf = config.Config()
+    conf = 'jenkins_reporting.config.Production'
     return application.create_app(conf)
 
 

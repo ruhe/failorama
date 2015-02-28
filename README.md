@@ -91,7 +91,7 @@ STAGING_JOBS = [
 
     $ python manage.py update-iso # Download upstream ISO and corresponding downstream build jobs statuses and update them in the database
 
-    $ python manage.py update-iso # Download staging jobs statuses and update them in the database
+    $ python manage.py update-staging # Download staging jobs statuses and update them in the database
 
     $ python manage.py devserver [PORT] # Run development web server instance listening on [PORT]
 

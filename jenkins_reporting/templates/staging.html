@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h4>Failed builds in <a style="color: black" href="{{ jenkins }}/view/All/job/{{ job }}">{{ job }}</a></h4>
+    <span class="text-muted">For more information about staging mirrors see
+        <a href="https://mirantis.jira.com/wiki/display/OC/Staging+Mirror+Duty" target="_blank">this link</a>.
+    </span>
+</div>
+
+
+{% include "staging_builds.html" %}
+{% endblock %}

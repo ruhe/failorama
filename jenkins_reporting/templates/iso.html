@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% macro render_label(text, type, title='') -%}
+    <span class="label {{ type }}" title="{{ title }}">{{ text }}</span>
+{%- endmacro %}
+
+{% macro render_build_result(test, build, label, result) -%}
+    <a href="{{ jenkins }}/job/{{ test }}/{{ build.downstream.get(test).number }}/" title="{{ test }}">
+        {{ render_label(result, label, test) }}
+    </a>
+{%- endmacro %}
+
+{% macro render_download_link(property, label) -%}
+    {% if property %}
+        <a href="{{ property }}"><i class="fa {{ label }}"></i></a>
+    {% else %}
+        <i class="fa fa-ban text-muted"></i>
+    {% endif %}
+{%- endmacro %}
+
+{% block content -%}
+<h4 class="page-header">MOS {{ version }} ISO status</h4>
+
+<table id="iso" class="table table-hover table-striped">
+<thead>
+<tr>
+    <th>#Build</th>
+    <th>Build Date</th>
+    {% for test in test_types %}
+        <th>{{ test }}</th>
+    {% endfor %}
+    <th>ISO</th>
+    <th>Torrent</th>
+</tr>
+</thead>
+<tbody>
+{% for build in builds %}
+    <tr>
+        <td>
+            <a href="{{ jenkins }}/job/{{ version}}.all/{{ build.number }}">
+                {% if build.result == 'SUCCESS' %}
+                    {{ render_label(build.number, 'label-success') }}
+                {% elif not build.result %}
+                    {{ render_label(build.number, 'label-info') }}
+                {% else %}
+                    {{ render_label(build.number, 'label-danger') }}
+                {% endif %}
+            </a>
+        </td>
+        <td class="nowrap_column">{{ build.date.strftime('%Y-%m-%d') }}</td>
+
+        {% for test in test_types %}
+        <td>
+            {% set result = build.downstream.get(test).result %}
+
+            {% if result == 'SUCCESS' %}
+                {{ render_build_result(test, build, 'label-success', 'PASS') }}
+            {% elif result == 'FAILURE' %}
+                {{ render_build_result(test, build, 'label-danger', 'FAIL') }}
+            {% elif not result %}
+                {{ render_label('N/A', 'label-default', test) }}
+            {% else %}
+                {{ render_build_result(test, build, 'label-warning', result) }}
+            {% endif %}
+        </td>
+        {% endfor %}
+
+        <td>
+            {{ render_download_link(build.iso_url, 'fa-download') }}
+        </td>
+        <td>
+            {{ render_download_link(build.torrent_url, 'fa-cloud-download') }}
+        </td>
+    </tr>
+{% endfor %}
+</tbody>
+</table>
+{%- endblock %}

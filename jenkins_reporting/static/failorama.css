@@ -1,0 +1,77 @@
+a {
+    color: #0033AA;
+}
+
+td {
+    border-top: 1px dotted #ddd !important;
+}
+
+th {
+    font-align: left !important;
+}
+
+#wrapper {
+    font-size: 12px;
+    font-family: Ubuntu, "Bitstream Vera Sans", "DejaVu Sans", Tahoma, sans-serif;
+}
+
+#navbar {
+    margin-left: 20px;
+    margin-top: 40px;
+    max-width: 300px;
+}
+
+.row {
+    margin: 0 !important;
+}
+
+.nowrap_column {
+    white-space: nowrap;
+}
+
+.sprite {
+    padding: 0 0 6px 18px;
+    line-height: 18px;
+    white-space: nowrap;
+}
+
+.team {
+    background: url("https://launchpad.net/+icing/rev17355/inline-sprites-1.png") no-repeat 0 -1596px;
+}
+
+.person {
+    background: url("https://launchpad.net/+icing/rev17355/inline-sprites-1.png") no-repeat 0 -1482px;
+}
+
+.build_result {
+    text-align: center;
+}
+
+#iso {
+    text-align: center !important;
+    max-width: 1000px;
+}
+
+#iso th {
+        text-align: center !important;
+}
+
+.footer {
+    position: absolute;
+    top: 15px;
+
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    text-align: right;
+    font-size: smaller;
+
+}
+
+.footer .container {
+    width: 100%;
+}
+
+.footer a {
+    color: #aaa !important;
+}

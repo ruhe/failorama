@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Product jenkins reports</title>
+
+    <link rel="stylesheet"
+          href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/metisMenu/1.1.3/metisMenu.min.css">
+    <link rel="stylesheet"
+          href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+    <link href="{{ url_for('static', filename='failorama.css') }}"
+          rel="stylesheet">
+</head>
+
+<body>
+<div id="wrapper">
+
+{% macro render_menu_header(title) -%}
+<span class="list-group-item disabled">
+    <i class="fa fa-bars"></i>&nbsp;&nbsp;{{ title }}
+</span>
+{%- endmacro %}
+
+{% macro am_i_active(test, url_part) -%}
+    {% if test and url_part in request.path %}active{% endif %}
+{%- endmacro %}
+
+{% macro render_menu_item(url, text, test_is_active, active_url_part) -%}
+<a class="list-group-item {{ am_i_active(test_is_active, active_url_part) }}"
+   href="{{ url }}">
+    {{ text }}
+</a>
+{%- endmacro %}
+
+<div class="row">
+    <div class="col-lg-3">
+        <div class="list-group" id="navbar">
+            {{ render_menu_header('MOS ISO status') }}
+            {% for v in versions %}
+                {{ render_menu_item(url_for('iso.iso', version=v), v, v == version, 'iso') }}
+            {% endfor %}
+
+            {{ render_menu_header('Failed staging builds') }}
+            {% for j in jobs %}
+                {{ render_menu_item(url_for('staging.staging', job=j), j, j == job, 'staging') }}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT HERE -->
+    <div class="col-lg-9">
+    {% block content %}{% endblock %}
+    </div>
+    <!-- MAIN CONTENT ENDS -->
+</div>
+<!-- /#row -->
+
+</div>
+<!-- /#wrapper -->
+
+<div class="footer">
+    <div class="container .pull-right ">
+        <a href="#" title="Contact support">About <i class="fa fa-external-link-square"></i></a></li>
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/metisMenu/1.1.3/metisMenu.min.js"></script>
+
+<script src="../static/failorama.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,56 @@
+<table class="table table-hover">
+    <tr>
+        <th>#Build</th>
+        <th>Build date</th>
+        <th>Bug</th>
+        <th>Status</th>
+        <th>Assignee</th>
+        <th>Target</th>
+    </tr>
+    <tbody>
+    {% for build in builds %}
+        {% for bug in build.bugs %}
+            <tr>
+                <td>
+                    <a href="{{ jenkins }}/view/All/job/{{ job }}/{{ build.number }}">{{ build.number }}</a>
+                </td>
+                <td class="nowrap_column">{{ build.date }}</td>
+                <td>
+                    <a href="https://launchpad.net/bugs/{{ bug.id }}">{{ bug.title }}</a>
+                </td>
+                <td class="nowrap_column">
+                    {% if bug.status in ('Fix Committed', 'Fix Released') %}
+                        <span style="color: darkgreen">{{ bug.status }}</span>
+                    {% else %}
+                        <span style="color: darkred">{{ bug.status }}</span>
+                    {% endif %}
+                </td>
+                <td class="nowrap_column">
+                    {% if bug.assignee is defined %}
+                        <a href="https://launchpad.net/~{{ bug.assignee.name }}"
+                           class="sprite {% if bug.assignee.is_team %}team{% else %}person{% endif %}">
+                            {{ bug.assignee.display_name }}
+                        </a>
+                    {% endif %}
+                </td>
+                <td>{{ bug.target }}</td>
+            </tr>
+        {% endfor %}
+
+        {% if not build.bugs %}
+            <tr class="text-muted">
+                <td>
+                    <a href="{{ jenkins }}/view/All/job/{{ job }}/{{ build.number }}">{{ build.number }}</a>
+                </td>
+                <td class="build_date">{{ build.date }}</td>
+                <td><span><i class="fa fa-question-circle"></i> No bugs attached</span>
+                </td>
+                <td><i class="fa fa-question-circle"></i></td>
+                <td><i class="fa fa-question-circle"></i></td>
+                <td><i class="fa fa-question-circle"></i></td>
+            </tr>
+        {% endif %}
+
+    {% endfor %}
+    </tbody>
+</table>

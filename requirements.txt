@@ -1,0 +1,6 @@
+click
+Flask
+Flask-SQLAlchemy
+lxml
+MySQL-python
+requests

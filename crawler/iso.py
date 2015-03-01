@@ -3,7 +3,6 @@ import lxml.etree as et
 
 import crawler as current_path
 from crawler import util
-from jenkins_reporting import application
 from jenkins_reporting import db
 
 mapping = {
@@ -101,7 +100,9 @@ def get_upstream_builds(dom):
 
 
 def find_result(downstream_builds, upstream_build_number):
-    # {128: {'upstreamBuild': 137, 'result': 'SUCCESS', 'upstreamProject': '6.1.all'}}
+    # {128: {'upstreamBuild': 137,
+    #        'result': 'SUCCESS',
+    #        'upstreamProject': '6.1.all'}}
     num, result = None, None
     for k, v in downstream_builds.items():
         if v['upstreamBuild'] == upstream_build_number:

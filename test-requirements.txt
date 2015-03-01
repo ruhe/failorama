@@ -3,3 +3,4 @@ unittest2
 discover
 coverage
 nose
+mock

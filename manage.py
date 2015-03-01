@@ -4,7 +4,6 @@ from crawler import staging
 from crawler import iso
 
 from jenkins_reporting import application
-from jenkins_reporting import config
 from jenkins_reporting import db
 from jenkins_reporting.extensions import db as flask_db
 
@@ -42,6 +41,7 @@ def syncdb():
 
     print "Finished."
 
+
 @cli.command()
 @click.argument('port', type=int, default=5000)
 def devserver(port):
@@ -57,7 +57,7 @@ def crawl_staging_jobs():
 
 
 @cli.command('update-iso')
-def crawl_staging_jobs():
+def crawl_iso_jobs():
     app = _create_app()
     with app.app_context():
         iso.crawl()

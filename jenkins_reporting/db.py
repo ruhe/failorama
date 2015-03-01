@@ -54,7 +54,8 @@ class IsoBuild(db.Model):
     downstream = db.Column(JsonEncoded())
 
     def __repr__(self):
-        return "[{0}] #{1} {2} {3}".format(self.result, self.number, self.job, self.downstream)
+        return "[{0}] #{1} {2} {3}".format(self.result, self.number,
+                                           self.job, self.downstream)
 
 
 def init_db():
@@ -62,13 +63,15 @@ def init_db():
 
 
 def get_staging_builds(job):
-    res = StagingBuild.query.filter_by(job=job).order_by(desc(StagingBuild.number)).all()
+    res = StagingBuild.query.filter_by(job=job).\
+        order_by(desc(StagingBuild.number)).all()
     return [x.payload for x in res]
 
 
 def insert_staging_builds(job, builds):
     for b in builds:
-        build = StagingBuild.query.filter_by(number=b['number'], job=job).first()
+        build = StagingBuild.query.\
+            filter_by(number=b['number'], job=job).first()
         new_build = StagingBuild(number=b['number'], job=job, payload=b)
 
         if build:
@@ -81,7 +84,8 @@ def insert_staging_builds(job, builds):
 
 
 def get_iso_builds(job):
-    return IsoBuild.query.filter_by(job=job).order_by(desc(IsoBuild.number)).all()
+    return IsoBuild.query.filter_by(job=job).\
+        order_by(desc(IsoBuild.number)).all()
 
 
 def insert_iso_builds(job, builds):

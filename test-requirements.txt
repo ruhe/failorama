@@ -4,3 +4,4 @@ discover
 coverage
 nose
 mock
+flake8

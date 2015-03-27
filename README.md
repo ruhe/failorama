@@ -49,7 +49,7 @@ Make sure following dependencies are installed in your system:
 
 #### Configure MySQL database
 
-Following command create database `jenkins_reporting` and grants
+Following command creates database `jenkins_reporting` and grants
 full privilegies to user `reporting` identified by password `reporting`:
 
 ```shell

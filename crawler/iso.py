@@ -1,7 +1,13 @@
+# Contents of this file are intended for the the old format of ISO jobs
+# which existed before 6.1
+# NOTE: this format is a subject of deprecation and should be eventually
+# removed
+
 from flask import current_app as app
 import lxml.etree as et
 
 import crawler as current_path
+from crawler import iso2
 from crawler import util
 from jenkins_reporting import db
 
@@ -144,6 +150,9 @@ def crawl():
     for iso in iso_versions:
         print "Getting ISO build history for {0}".format(iso)
         job = "{0}.all".format(iso)
-        builds = get_iso_info(job)
+        if iso == '6.1':
+            builds = iso2.get_iso_info(iso)
+        else:
+            builds = get_iso_info(job)
         db.insert_iso_builds(job, builds)
         print "Finished getting ISO build history for {0}".format(iso)

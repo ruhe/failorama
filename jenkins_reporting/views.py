@@ -19,8 +19,10 @@ def index():
 def iso(version):
     job = "{0}.all".format(version)
     builds = db.get_iso_builds(job)
-    # Assuming all builds in 'version' have the same set of downstream jobs
-    test_types = sorted(builds[0].downstream.keys())
+
+    # Find first build which has a list of downstream builds
+    good_build = next(build for build in builds if (build.downstream.keys()))
+    test_types = sorted(good_build.downstream.keys())
 
     return flask.render_template("iso.html",
                                  builds=builds,

@@ -13,7 +13,7 @@ BUILD_INFO_URL = \
     "{0}/job/{1}/{2}/api/json?tree=" \
     "actions[causes[upstreamBuild,upstreamProject]]," \
     "subBuilds[buildNumber,jobName,result]," \
-    "number,result"
+    "number,result,timestamp"
 
 
 def get_job_build_range(jenkins, job):

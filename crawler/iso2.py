@@ -56,10 +56,16 @@ def query_test_all_job(job):
 
         build = {
             'result': raw['result'],
+            'timestamp': raw['timestamp'],
             'downstream': downstream
         }
 
-        builds[upstream_build_number] = build
+        if upstream_build_number in builds.keys():
+            other = builds[upstream_build_number]
+            if other['timestamp'] < build['timestamp']:
+                builds[upstream_build_number] = build
+        else:
+            builds[upstream_build_number] = build
 
     return builds
 

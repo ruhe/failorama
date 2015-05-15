@@ -48,6 +48,10 @@ def try_read_timestamp(ts):
         return None
 
 
+def has_key(d, key):
+    return key in d.keys() and d[key]
+
+
 def select_keys(d, keys):
     return {k: d.get(k, None) for k in keys}
 

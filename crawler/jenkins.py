@@ -4,7 +4,8 @@ import re
 from crawler import util
 
 JOB_INFO_URL = \
-    "{0}/job/{1}/api/json?tree=firstBuild[number],lastBuild[number]"
+    "{0}/job/{1}/api/json?tree=firstBuild[number],lastBuild[number]," \
+    "downstreamProjects[name]"
 
 BUILD_SHORT_INFO_URL = \
     "{0}/job/{1}/{2}/api/json?tree=result,timestamp,number,description"
@@ -12,7 +13,6 @@ BUILD_SHORT_INFO_URL = \
 BUILD_INFO_URL = \
     "{0}/job/{1}/{2}/api/json?tree=" \
     "actions[causes[upstreamBuild,upstreamProject]]," \
-    "subBuilds[buildNumber,jobName,result]," \
     "number,result,timestamp"
 
 
@@ -23,7 +23,20 @@ def get_job_build_range(jenkins, job):
     first = resp['firstBuild']['number']
     last = resp['lastBuild']['number']
 
-    return xrange(last, first, -1)
+    return xrange(first, last + 1)
+
+
+def get_downstream_build_names(jenkins, job, ignore_list):
+    url = JOB_INFO_URL.format(jenkins, job)
+    resp = util.get_json(url)
+    names = []
+
+    for pair in resp["downstreamProjects"]:
+        name = pair["name"]
+        if name and name not in ignore_list:
+            names.append(name)
+
+    return names
 
 
 def get_build(jenkins, job, number, short=True):

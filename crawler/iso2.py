@@ -147,13 +147,3 @@ def get_iso_info(iso):
                 values["downstream"] = to_copy["downstream"]
 
     return main_job_builds
-
-
-if __name__ == '__main__':
-    import pprint
-    from jenkins_reporting import application
-
-    app = application.create_app('jenkins_reporting.config.Testing')
-
-    with app.app_context():
-        pprint.pprint(get_iso_info("6.1"))

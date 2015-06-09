@@ -1,7 +1,10 @@
+import json
+
 import flask
 from flask import current_app as app
 
 from jenkins_reporting import db
+from jenkins_reporting import stats
 
 root_bp = flask.Blueprint('root', __name__)
 iso_bp = flask.Blueprint('iso', __name__, template_folder='templates')
@@ -33,11 +36,25 @@ def iso(version):
                                  versions=app.config['ISO_VERSIONS'])
 
 
+def _prepare_data_for_charts(top_n):
+    data = []
+    for k, v in top_n.items():
+        data.append({"label": k, "value": v})
+
+    return json.dumps(data)
+
+
 @staging_bp.route('/<job>')
 def staging(job):
+    builds = db.get_staging_builds(job)
+    top_by_target = _prepare_data_for_charts(stats.get_top_by_target(builds))
+    top_by_team = _prepare_data_for_charts(stats.get_top_by_team(builds))
+
     return flask.render_template("staging.html",
                                  job=job,
-                                 builds=db.get_staging_builds(job),
+                                 builds=builds,
                                  jenkins=app.config['PRODUCT_JENKINS'],
                                  jobs=app.config['STAGING_JOBS'],
-                                 versions=app.config['ISO_VERSIONS'])
+                                 versions=app.config['ISO_VERSIONS'],
+                                 top_by_target=top_by_target,
+                                 top_by_team=top_by_team)

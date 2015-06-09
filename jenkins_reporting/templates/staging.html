@@ -8,6 +8,40 @@
     </span>
 </div>
 
+<div class="row">
+<div class="col-md-4" id="top_by_target">
+    <h4>Top by project</h4>
+    <svg></svg>
+</div>
+<div class="col-md-4" id="top_by_team">
+    <h4>Top by team</h4>
+    <svg></svg>
+</div>
+</div>
 
+<script>
+function render_chart(chart_id, data) {
+    nv.addGraph(function() {
+      var chart = nv.models.pieChart()
+          .x(function(d) { return d.label })
+          .y(function(d) { return d.value })
+          .showLabels(true)
+          .showLegend(false);
+
+        d3.select("#" + chart_id + " svg")
+            .datum(data)
+          .transition().duration(1200)
+            .call(chart);
+
+      return chart;
+    });
+}
+
+render_chart("top_by_target", {{ top_by_target|safe }});
+render_chart("top_by_team", {{ top_by_team|safe }});
+</script>
+
+<div class="row">
 {% include "staging_builds.html" %}
+</div>
 {% endblock %}

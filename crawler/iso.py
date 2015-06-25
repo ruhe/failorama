@@ -151,7 +151,7 @@ def crawl():
     for iso in iso_versions:
         print "Getting ISO build history for {0}".format(iso)
         job = "{0}.all".format(iso)
-        if iso == '6.1':
+        if iso == '6.1' or iso == '7.0':
             builds = iso2.get_iso_info(iso)
         else:
             builds = get_iso_info(job)

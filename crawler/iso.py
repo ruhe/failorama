@@ -40,7 +40,8 @@ def get_downstream_job_names(dom):
     names = [x.text for x in dom.xpath("/root//job/name")]
     ignored_jobs = app.config['IGNORED_ISO_JOBS']
     for to_remove in ignored_jobs:
-        names.remove(to_remove)
+        if to_remove in names:
+            names.remove(to_remove)
     return names
 
 

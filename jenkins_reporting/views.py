@@ -68,7 +68,7 @@ def staging(job):
         if build['bugs']:
             total_number_of_bugs += len(build['bugs'])
 
-    avg_bugs_per_build = len(failed_builds)/total_number_of_bugs
+    success_ratio = round(1.0 * (len(builds) - len(failed_builds)) / len(builds), 2)
     bugs_per_week = _bugs_per_week(failed_builds)
     last_week = sorted(bugs_per_week.keys(), reverse=True)[0]
     failed_last_week = bugs_per_week[last_week]
@@ -80,7 +80,7 @@ def staging(job):
                                  job=job,
                                  total_builds_num=len(builds),
                                  total_failed_builds_num=len(failed_builds),
-                                 avg_bugs_per_build=avg_bugs_per_build,
+                                 success_ratio=success_ratio,
                                  avg_failed_per_week=len(failed_builds)/len(bugs_per_week.keys()),
                                  failed_last_week=failed_last_week,
                                  builds=failed_builds,

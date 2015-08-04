@@ -7,7 +7,7 @@ from jenkins_reporting import db
 
 def scan_failed_builds(job_name):
     jenkins_url = app.config['PRODUCT_JENKINS']
-    failed = jenkins.get_failed_builds(jenkins_url, job_name)
+    failed = jenkins.get_builds(jenkins_url, job_name)
 
     for build in failed:
         build['bugs'] = map(launchpad.get_bug, build['bugs'])

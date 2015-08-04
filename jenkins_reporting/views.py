@@ -1,3 +1,5 @@
+import collections
+from datetime import datetime
 import json
 
 import flask
@@ -44,15 +46,44 @@ def _prepare_data_for_charts(top_n):
     return json.dumps(data)
 
 
+def _bugs_per_week(failed_builds):
+    counter = collections.defaultdict(int)
+
+    for build in failed_builds:
+        date = datetime.strptime(build['date'], '%Y-%m-%d')
+        (year, week, _) = date.isocalendar()
+        key = str(year) + str(week)
+        counter[key] += 1
+
+    return counter
+
+
 @staging_bp.route('/<job>')
 def staging(job):
     builds = db.get_staging_builds(job)
+    failed_builds = filter(lambda x: x['result'] == 'FAILURE', builds)
+    total_number_of_bugs = 0
+    for build in failed_builds:
+        print build['date']
+        if build['bugs']:
+            total_number_of_bugs += len(build['bugs'])
+
+    avg_bugs_per_build = len(failed_builds)/total_number_of_bugs
+    bugs_per_week = _bugs_per_week(failed_builds)
+    last_week = sorted(bugs_per_week.keys(), reverse=True)[0]
+    failed_last_week = bugs_per_week[last_week]
+
     top_by_target = _prepare_data_for_charts(stats.get_top_by_target(builds))
     top_by_team = _prepare_data_for_charts(stats.get_top_by_team(builds))
 
     return flask.render_template("staging.html",
                                  job=job,
-                                 builds=builds,
+                                 total_builds_num=len(builds),
+                                 total_failed_builds_num=len(failed_builds),
+                                 avg_bugs_per_build=avg_bugs_per_build,
+                                 avg_failed_per_week=len(failed_builds)/len(bugs_per_week.keys()),
+                                 failed_last_week=failed_last_week,
+                                 builds=failed_builds,
                                  jenkins=app.config['PRODUCT_JENKINS'],
                                  jobs=app.config['STAGING_JOBS'],
                                  versions=app.config['ISO_VERSIONS'],

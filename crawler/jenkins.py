@@ -110,6 +110,21 @@ def _timestamp2str(ts):
     return dt.strftime('%Y-%m-%d')
 
 
+def get_builds(jenkins, job):
+    rng = get_job_build_range(jenkins, job)
+
+    builds = []
+    for i in rng:
+        build = get_build(jenkins, job, i)
+        build['bugs'] = find_bugs(build)
+        build['date'] = _timestamp2str(build['timestamp'])
+        util.remove_key(build, 'description')
+
+        builds.append(build)
+
+    return builds
+
+
 def get_failed_builds(jenkins, job):
     rng = get_job_build_range(jenkins, job)
 
@@ -121,8 +136,5 @@ def get_failed_builds(jenkins, job):
             build['date'] = _timestamp2str(build['timestamp'])
             util.remove_key(build, 'description')
             failed_builds.append(build)
-
-        print('.'),
-    print
 
     return failed_builds

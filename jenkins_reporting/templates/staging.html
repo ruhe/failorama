@@ -20,10 +20,10 @@
         <li class="list-group-item">
             Total number of failed builds <span class="pull-right label label-danger">{{ metrics.total_failed_builds_num }}</span>
         </li>
-        <li class="list-group-item" title="Number of failed builds with bugs assigned to Infra team">
+        <li class="list-group-item" title="Number of failed builds with bugs assigned to anyone but Infra team">
             Product software failures <span class="pull-right label label-danger">{{ metrics.software_failures }}</span>
         </li>
-        <li class="list-group-item" title="Number of failed builds with bugs assigned to anyone but Infra team">
+        <li class="list-group-item" title="Number of failed builds with bugs assigned to Infra team">
             Product infra failures <span class="pull-right label label-danger">{{ metrics.infra_failures }}</span>
         </li>
         <li class="list-group-item">

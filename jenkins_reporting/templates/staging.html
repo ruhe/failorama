@@ -10,49 +10,108 @@
 
 
 <div class="row">
-<div class="col-md-4" id="top_by_target">
+<div class="col-md-4">
     <h4>Stats</h4>
-    <ul class="list-group" style="padding-top: 40px">
+    <ul class="list-group" style="padding-top: 10px">
         <li class="list-group-item disabled">{{ job }} stats</li>
-        <li class="list-group-item">Total number of builds <span class="pull-right label label-danger">{{ total_builds_num }}</span></li>
-        <li class="list-group-item">Total number of failed builds <span class="pull-right label label-danger">{{ total_failed_builds_num }}</span></li>
-        <li class="list-group-item">Success ratio <span class="pull-right label label-danger">{{ success_ratio }}</span></li>
-        <li class="list-group-item">Avg number of failures per week <span class="pull-right label label-danger">{{ avg_failed_per_week }}</span></li>
-        <li class="list-group-item">Number of failures last week <span class="pull-right label label-danger">{{ failed_last_week }}</span></li>
+        <li class="list-group-item">
+            Total number of builds <span class="pull-right label label-danger">{{ metrics.total_builds_num }}</span>
+        </li>
+        <li class="list-group-item">
+            Total number of failed builds <span class="pull-right label label-danger">{{ metrics.total_failed_builds_num }}</span>
+        </li>
+        <li class="list-group-item" title="Number of failed builds with bugs assigned to Infra team">
+            Product software failures <span class="pull-right label label-danger">{{ metrics.software_failures }}</span>
+        </li>
+        <li class="list-group-item" title="Number of failed builds with bugs assigned to anyone but Infra team">
+            Product infra failures <span class="pull-right label label-danger">{{ metrics.infra_failures }}</span>
+        </li>
+        <li class="list-group-item">
+            Success ratio <span class="pull-right label label-danger">{{ metrics.success_ratio }}</span>
+        </li>
+        <li class="list-group-item">
+            Avg number of failures per week <span class="pull-right label label-danger">{{ metrics.avg_failed_per_week }}</span>
+        </li>
+        <li class="list-group-item">
+            Number of failures last week <span class="pull-right label label-danger">{{ metrics.failed_last_week }}</span>
+        </li>
     </ul>
 </div>
 
 <div class="col-md-4" id="top_by_target">
-    <h4>Top by project</h4>
-    <svg></svg>
 </div>
 
 <div class="col-md-4" id="top_by_team">
-    <h4>Top by team</h4>
-    <svg></svg>
+
 </div>
 </div>
 
 <script>
-function render_chart(chart_id, data) {
-    nv.addGraph(function() {
-      var chart = nv.models.pieChart()
-          .x(function(d) { return d.label })
-          .y(function(d) { return d.value })
-          .showLabels(true)
-          .showLegend(false);
+    function render_chart(chart_id, title, subtitle, data) {
+        new d3pie(chart_id, {
+            header: {
+                title: {
+                    text: title,
+                    fontSize: 15
+                },
+                "subtitle": {
+                    "text": subtitle,
+                    "color": "#999999",
+                    "fontSize": 12
+                },
+                location: 'top-left',
+                titleSubtitlePadding: 9
+            },
+            size: {
+                canvasWidth: 360,
+                canvasHeight: 300,
+                pieInnerRadius: '38%',
+                pieOuterRadius: '80%'
+            },
+            labels: {
+                outer: {
+                    format: 'label-value2',
+                    pieDistance: 10
+                },
+                mainLabel: {
+                    fontSize: 14
+                },
+                percentage: {
+                    color: '#ffffff',
+                    decimalPlaces: 2
+                },
+                value: {
+                    color: '#adadad',
+                    fontSize: 11
+                },
+                lines: {
+                    enabled: true
+                }
+            },
+            data: {
+                content: data
+            },
+            tooltips: {
+                enabled: true,
+                type: 'placeholder',
+                string: '{label}: {value}, {percentage}%',
+                styles: {
+                    borderRadius: 3,
+                    fontSize: 12,
+                    padding: 6
+                }
+            }
+        });
 
-        d3.select("#" + chart_id + " svg")
-            .datum(data)
-          .transition().duration(1200)
-            .call(chart);
 
-      return chart;
-    });
-}
+    }
 
-render_chart("top_by_target", {{ top_by_target|safe }});
-render_chart("top_by_team", {{ top_by_team|safe }});
+    render_chart("top_by_target",
+            "Distribution by Launchpad project",
+            "Distribution of failures by Launchpad project [fuel, mos]", {{ top_by_target|safe }});
+    render_chart("top_by_team",
+            "Distribution by assigned team",
+            "Distribution of failures by assigned team", {{ top_by_team|safe }});
 </script>
 
 <div class="row">

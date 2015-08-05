@@ -9,7 +9,7 @@ from jenkins_reporting.extensions import db as flask_db
 
 
 def _create_app():
-    conf = 'jenkins_reporting.config.Production'
+    conf = 'jenkins_reporting.config.Testing'
     return application.create_app(conf)
 
 
@@ -43,10 +43,11 @@ def syncdb():
 
 
 @cli.command()
-@click.argument('port', type=int, default=5000)
-def devserver(port):
+@click.option('--host', type=str, default='127.0.0.1')
+@click.option('--port', type=int, default=5000)
+def devserver(host, port):
     app = _create_app()
-    app.run(port=port)
+    app.run(host=host, port=port)
 
 
 @cli.command('update-staging')

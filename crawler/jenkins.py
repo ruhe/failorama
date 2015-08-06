@@ -118,7 +118,6 @@ def get_builds(jenkins, job, stopline=0):
         build = get_build(jenkins, job, i)
 
         timestamp = build['timestamp'] / 1000
-        print("{0} < {1}".format(timestamp, stopline))
 
         if timestamp < stopline:
             print "Faced stop-line. Stopped on {0}.".format(

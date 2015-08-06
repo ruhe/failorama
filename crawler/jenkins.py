@@ -23,7 +23,7 @@ def get_job_build_range(jenkins, job):
     first = resp['firstBuild']['number']
     last = resp['lastBuild']['number']
 
-    return xrange(first, last + 1)
+    return xrange(last, first-1, -1)
 
 
 def get_downstream_build_names(jenkins, job, ignore_list):
@@ -106,35 +106,29 @@ def _failed_build(build):
 
 def _timestamp2str(ts):
     # round timestamp to seconds
-    dt = datetime.datetime.fromtimestamp(ts/1000)
+    dt = datetime.datetime.fromtimestamp(ts)
     return dt.strftime('%Y-%m-%d')
 
 
-def get_builds(jenkins, job):
+def get_builds(jenkins, job, stopline=0):
     rng = get_job_build_range(jenkins, job)
 
     builds = []
     for i in rng:
         build = get_build(jenkins, job, i)
+
+        timestamp = build['timestamp'] / 1000
+        print("{0} < {1}".format(timestamp, stopline))
+
+        if timestamp < stopline:
+            print "Faced stop-line. Stopped on {0}.".format(
+                _timestamp2str(timestamp))
+            break
+
         build['bugs'] = find_bugs(build)
-        build['date'] = _timestamp2str(build['timestamp'])
+        build['date'] = _timestamp2str(timestamp)
         util.remove_key(build, 'description')
 
         builds.append(build)
 
     return builds
-
-
-def get_failed_builds(jenkins, job):
-    rng = get_job_build_range(jenkins, job)
-
-    failed_builds = []
-    for i in rng:
-        build = get_build(jenkins, job, i)
-        if _failed_build(build):
-            build['bugs'] = find_bugs(build)
-            build['date'] = _timestamp2str(build['timestamp'])
-            util.remove_key(build, 'description')
-            failed_builds.append(build)
-
-    return failed_builds

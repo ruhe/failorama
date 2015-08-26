@@ -18,14 +18,21 @@ def index():
     return flask.redirect(url)
 
 
+def _get_iso_test_types(builds):
+    latest_build = next(build for build in builds if
+                        (build.downstream.keys()
+                         and build.result in ["SUCCESS", "FAILURE"]))
+    return sorted(latest_build.downstream.keys())
+
+
 @iso_bp.route('/<version>')
 def iso(version):
     job = "{0}.all".format(version)
     builds = db.get_iso_builds(job)
-
-    # Find first build which has a list of downstream builds
-    good_build = next(build for build in builds if (build.downstream.keys()))
-    test_types = sorted(good_build.downstream.keys())
+    if builds:
+        test_types = _get_iso_test_types(builds)
+    else:
+        test_types = []
 
     return flask.render_template("iso.html",
                                  builds=builds,

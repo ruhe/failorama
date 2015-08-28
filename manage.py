@@ -75,4 +75,5 @@ if __name__ == '__main__':
                         level=logging.DEBUG,
                         format=logging_format)
     logging.getLogger("requests").setLevel(logging.ERROR)
+    logging.getLogger("urllib3").setLevel(logging.ERROR)
     cli()

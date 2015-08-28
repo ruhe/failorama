@@ -13,7 +13,7 @@ staging_bp = flask.Blueprint('staging', __name__, template_folder='templates')
 
 @root_bp.route('/')
 def index():
-    default_version = app.config['ISO_VERSIONS'][0]
+    default_version = app.config["MASTER_CI"]["ISO_JOBS"][0]
     url = flask.url_for('iso.iso', version=default_version)
     return flask.redirect(url)
 

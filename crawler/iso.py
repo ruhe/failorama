@@ -2,14 +2,19 @@
 # which existed before 6.1
 # NOTE: this format is a subject of deprecation and should be eventually
 # removed
-
-from flask import current_app as app
+import logging
 import lxml.etree as et
+from StringIO import StringIO
+
+from flask import current_app
+import requests
 
 import crawler as current_path
 from crawler import iso2
 from crawler import util
 from jenkins_reporting import db
+
+log = logging.getLogger(__name__)
 
 mapping = {
     'number': util.try_int,
@@ -22,14 +27,16 @@ mapping = {
 
 
 def build_dom(xml_path, xslt_path):
-    dom = et.parse(xml_path)
+    # in some cases python lxml will fail to fetch xml from URL
+    # thus we have to fetch xml first and then pass a stream to lxml to parse
+    xml = StringIO(requests.get(xml_path).text)
+    dom = et.parse(xml)
     xslt = et.parse(xslt_path)
     transform = et.XSLT(xslt)
     return transform(dom)
 
 
-def get_dom(job):
-    jenkins_url = app.config['PRODUCT_JENKINS']
+def get_dom(jenkins_url, job):
     link = "{0}/job/{1}/api/xml?depth=1".format(jenkins_url, job)
 
     xslt_path = util.file_abs_path('build.xslt', current_path.__file__)
@@ -38,7 +45,7 @@ def get_dom(job):
 
 def get_downstream_job_names(dom):
     names = [x.text for x in dom.xpath("/root//job/name")]
-    ignored_jobs = app.config['IGNORED_ISO_JOBS']
+    ignored_jobs = current_app.config['IGNORED_ISO_JOBS']
     for to_remove in ignored_jobs:
         if to_remove in names:
             names.remove(to_remove)
@@ -118,15 +125,15 @@ def find_result(downstream_builds, upstream_build_number):
     return num, result
 
 
-def get_iso_info(job):
-    dom = get_dom(job)
+def get_iso_info(jenkins_url, job):
+    dom = get_dom(jenkins_url, job)
     upstream_builds = get_upstream_builds(dom)
 
     downstream_job_names = get_downstream_job_names(dom)
 
     downstream_results = {}
     for job in downstream_job_names:
-        job_dom = get_dom(job)
+        job_dom = get_dom(jenkins_url, job)
         builds = get_downsteram_builds(job_dom)
 
         downstream_results[job] = builds
@@ -145,15 +152,30 @@ def get_iso_info(job):
     return upstream_builds
 
 
-def crawl():
-    iso_versions = app.config['ISO_VERSIONS']
+def crawl_stable_ci(ci):
+    jenkins_url = ci["JENKINS"]
+    iso_versions = ci["ISO_JOBS"]
 
     for iso in iso_versions:
-        print "Getting ISO build history for {0}".format(iso)
+        log.info("Getting ISO build history for {0}".format(iso))
         job = "{0}.all".format(iso)
-        if iso == '6.1' or iso == '7.0':
-            builds = iso2.get_iso_info(iso)
-        else:
-            builds = get_iso_info(job)
+        builds = get_iso_info(jenkins_url, job)
         db.insert_iso_builds(job, builds)
-        print "Finished getting ISO build history for {0}".format(iso)
+        log.info("Finished getting ISO build history for {0}".format(iso))
+
+
+def crawl_master_ci(ci):
+    jenkins_url = ci["JENKINS"]
+    iso_versions = ci["ISO_JOBS"]
+
+    for iso in iso_versions:
+        log.info("Getting ISO build history for {0}".format(iso))
+        job = "{0}.all".format(iso)
+        builds = iso2.get_iso_info(jenkins_url, iso)
+        db.insert_iso_builds(job, builds)
+        log.info("Finished getting ISO build history for {0}".format(iso))
+
+
+def crawl():
+    crawl_stable_ci(current_app.config["STABLE_CI"])
+    crawl_master_ci(current_app.config["MASTER_CI"])

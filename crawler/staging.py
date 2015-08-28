@@ -1,26 +1,19 @@
-import datetime
-import time
+import logging
 
-from flask import current_app as app
+from flask import current_app
 
 from crawler import jenkins
 from crawler import launchpad
+from crawler import util
 from jenkins_reporting import db
 
+log = logging.getLogger(__name__)
 
 
-
-def _get_stop_line():
-    now = datetime.date.today()
-    week_ago = now - datetime.timedelta(days=7)
-
-    ts = time.mktime(week_ago.timetuple())
-    return int(ts)
-
-
-def scan_failed_builds(job_name):
-    jenkins_url = app.config['PRODUCT_JENKINS']
-    failed = jenkins.get_builds(jenkins_url, job_name, stopline=_get_stop_line())
+def scan_failed_builds(jenkins_url, job_name):
+    failed = jenkins.get_builds(jenkins_url,
+                                job_name,
+                                stopline=util.days_ago_timestamp(7))
 
     for build in failed:
         build['bugs'] = map(launchpad.get_bug, build['bugs'])
@@ -28,13 +21,21 @@ def scan_failed_builds(job_name):
     return failed
 
 
-def crawl_job(job_name):
-    res = scan_failed_builds(job_name)
+def crawl_job(jenkins_url, job_name):
+    res = scan_failed_builds(jenkins_url, job_name)
     db.insert_staging_builds(job_name, res)
 
 
+def crawl_ci(ci):
+    jenkins_url = ci["JENKINS"]
+    staging_jobs = ci["STAGING_JOBS"]
+
+    for job in staging_jobs:
+        log.info("Starting to crawl job #{0}".format(job))
+        crawl_job(jenkins_url, job)
+        log.info("Done crawling job #{0}".format(job))
+
+
 def crawl():
-    for job in app.config['STAGING_JOBS']:
-        print "Starting to crawl job #{0}".format(job)
-        crawl_job(job)
-        print "Done crawling job #{0}".format(job)
+    crawl_ci(current_app.config["MASTER_CI"])
+    crawl_ci(current_app.config["STABLE_CI"])

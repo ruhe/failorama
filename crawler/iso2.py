@@ -1,7 +1,11 @@
+import logging
+
 from flask import current_app as app
 
 from crawler import jenkins
 from crawler import util
+
+log = logging.getLogger(__name__)
 
 
 def should_insert_newer_build(builds, build, upstream_number):
@@ -19,8 +23,7 @@ def should_insert_newer_build(builds, build, upstream_number):
     return True
 
 
-def get_build_info(job, build_number):
-    jenkins_url = app.config['PRODUCT_JENKINS']
+def get_build_info(jenkins_url, job, build_number):
     raw = jenkins.get_build(jenkins_url, job, build_number, short=False)
     upstream = jenkins.extract_parent_build_info(raw['actions'])
 
@@ -33,21 +36,29 @@ def get_build_info(job, build_number):
     return upstream, record
 
 
-def get_builds(job):
-    print "Getting builds for <{0}>".format(job)
-    jenkins_url = app.config['PRODUCT_JENKINS']
+def get_builds(jenkins_url, job, days_back=2):
+    log.info("Getting builds for <{0}>".format(job))
+
     rng = jenkins.get_job_build_range(jenkins_url, job)
+    stopline = util.days_ago_timestamp(7)
 
     builds = {}
     for i in rng:
         try:
-            upstream_build, build = get_build_info(job, i)
+            upstream_build, build = get_build_info(jenkins_url, job, i)
         except Exception:
             continue
 
         # orphan build without upstream build. skip it
         if not upstream_build:
             continue
+
+        timestamp = build['timestamp'] / 1000
+
+        if timestamp < stopline:
+            stopline_str = util.timestamp2str(timestamp)
+            log.info("Stop line {0} for job {1}".format(stopline_str, job))
+            break
 
         upstream_number = upstream_build["upstreamBuild"]
 
@@ -83,9 +94,10 @@ def process_raw_build(raw):
     return number, values
 
 
-def query_main_job(job):
-    jenkins_url = app.config['PRODUCT_JENKINS']
+def query_main_job(jenkins_url, job):
+    log.info("Getting main job {0}".format(job))
     rng = jenkins.get_job_build_range(jenkins_url, job)
+    stopline = util.days_ago_timestamp(7)
 
     builds = {}
     for n in rng:
@@ -94,14 +106,19 @@ def query_main_job(job):
         except Exception:
             continue
 
+        timestamp = raw["timestamp"] / 1000
+        if timestamp < stopline:
+            stopline_str = util.timestamp2str(timestamp)
+            log.info("Stop line {0} for job {1}".format(stopline_str, job))
+            break
+
         number, processed_values = process_raw_build(raw)
         builds[number] = processed_values
 
     return builds
 
 
-def collect_test_results(job):
-    jenkins_url = app.config['PRODUCT_JENKINS']
+def collect_test_results(jenkins_url, job):
     ignore_list = app.config['IGNORED_ISO_JOBS']
     downstream_jobs = jenkins.get_downstream_build_names(jenkins_url,
                                                          job,
@@ -109,7 +126,7 @@ def collect_test_results(job):
 
     test_results = {}
     for test_job in downstream_jobs:
-        test_results[test_job] = get_builds(test_job)
+        test_results[test_job] = get_builds(jenkins_url, test_job)
 
     return test_results
 
@@ -124,20 +141,20 @@ def match_test_results(upstream, downstream):
                 build['downstream'][test_job] = test_results[number]
 
 
-def get_test_all_results(job):
-    test_all_builds = get_builds(job)
-    test_results = collect_test_results(job)
+def get_test_all_results(jenkins_url, job):
+    test_all_builds = get_builds(jenkins_url, job)
+    test_results = collect_test_results(jenkins_url, job)
     match_test_results(test_all_builds, test_results)
 
     return test_all_builds
 
 
-def get_iso_info(iso):
+def get_iso_info(jenkins_url, iso):
     main_job_name = "{0}.all".format(iso)
     test_all_job_name = "{0}.test_all".format(iso)
 
-    main_job_builds = query_main_job(main_job_name)
-    test_results = get_test_all_results(test_all_job_name)
+    main_job_builds = query_main_job(jenkins_url, main_job_name)
+    test_results = get_test_all_results(jenkins_url, test_all_job_name)
 
     for number, values in main_job_builds.items():
         if util.has_key(test_results, number):

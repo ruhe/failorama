@@ -38,8 +38,7 @@
     </ul>
 </div>
 
-<div class="col-md-4" id="top_by_team"></div>
-<div class="col-md-4" id="top_by_target"></div>
+<div class="col-md-6" id="top_by_team"></div>
 </div>
 
 <script>
@@ -48,21 +47,20 @@
             header: {
                 title: {
                     text: title,
-                    fontSize: 15
+                    fontSize: 18
                 },
                 "subtitle": {
                     "text": subtitle,
                     "color": "#999999",
                     "fontSize": 12
                 },
-                location: 'top-left',
                 titleSubtitlePadding: 9
             },
             size: {
-                canvasWidth: 360,
-                canvasHeight: 300,
-                pieInnerRadius: '38%',
-                pieOuterRadius: '80%'
+                canvasWidth: 420,
+                canvasHeight: 320,
+                pieInnerRadius: '45%',
+                pieOuterRadius: '75%'
             },
             labels: {
                 outer: {
@@ -102,9 +100,6 @@
 
     }
 
-    render_chart("top_by_target",
-            "Distribution by Launchpad project",
-            "Distribution of failures by Launchpad project [fuel, mos]", {{ top_by_target|safe }});
     render_chart("top_by_team",
             "Distribution by assigned team",
             "Distribution of failures by assigned team", {{ top_by_team|safe }});

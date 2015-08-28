@@ -21,6 +21,7 @@
 {% block content -%}
 <h4 class="page-header">MOS {{ version }} ISO status</h4>
 
+{% if builds|length > 0 %}
 <table id="iso" class="table table-hover table-striped">
 <thead>
 <tr>
@@ -75,4 +76,8 @@
 {% endfor %}
 </tbody>
 </table>
+{% else %}
+<div class="alert alert-warning" role="alert">There are no builds found for ISO {{ version }}</div>
+{% endif %}
+
 {%- endblock %}

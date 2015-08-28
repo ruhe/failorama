@@ -1,3 +1,6 @@
+import logging
+import sys
+
 import click
 
 from crawler import staging
@@ -7,9 +10,11 @@ from jenkins_reporting import application
 from jenkins_reporting import db
 from jenkins_reporting.extensions import db as flask_db
 
+log = logging.getLogger(__name__)
+
 
 def _create_app():
-    conf = 'jenkins_reporting.config.Testing'
+    conf = 'jenkins_reporting.config.Production'
     return application.create_app(conf)
 
 
@@ -37,9 +42,9 @@ def syncdb():
 
     created_tables = tables_after - tables_before
     for table in created_tables:
-        print ' > Created table: {}'.format(table)
+        log.info("syncdb: Created table {0}".format(table))
 
-    print "Finished."
+    log.info("syncdb: finished")
 
 
 @cli.command()
@@ -65,4 +70,9 @@ def crawl_iso_jobs():
 
 
 if __name__ == '__main__':
+    logging_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    logging.basicConfig(stream=sys.stdout,
+                        level=logging.DEBUG,
+                        format=logging_format)
+    logging.getLogger("requests").setLevel(logging.ERROR)
     cli()

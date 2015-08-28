@@ -1,7 +1,9 @@
-import datetime
+import logging
 import re
 
 from crawler import util
+
+log = logging.getLogger(__name__)
 
 JOB_INFO_URL = \
     "{0}/job/{1}/api/json?tree=firstBuild[number],lastBuild[number]," \
@@ -104,28 +106,21 @@ def _failed_build(build):
     return build['result'] == 'FAILURE'
 
 
-def _timestamp2str(ts):
-    # round timestamp to seconds
-    dt = datetime.datetime.fromtimestamp(ts)
-    return dt.strftime('%Y-%m-%d')
-
-
 def get_builds(jenkins, job, stopline=0):
     rng = get_job_build_range(jenkins, job)
 
     builds = []
     for i in rng:
         build = get_build(jenkins, job, i)
-
         timestamp = build['timestamp'] / 1000
 
         if timestamp < stopline:
-            print "Faced stop-line. Stopped on {0}.".format(
-                _timestamp2str(timestamp))
+            log.info("Stop line {0} for job {1}".format(
+                util.timestamp2str(timestamp), job))
             break
 
         build['bugs'] = find_bugs(build)
-        build['date'] = _timestamp2str(timestamp)
+        build['date'] = util.timestamp2str(timestamp)
         util.remove_key(build, 'description')
 
         builds.append(build)

@@ -25,6 +25,27 @@ def _get_iso_test_types(builds):
     return sorted(latest_build.downstream.keys())
 
 
+def _get_ci_config(param_type, param):
+    master_ci = app.config["MASTER_CI"]
+    stable_ci = app.config["STABLE_CI"]
+
+    if param in master_ci[param_type]:
+        return master_ci
+    elif param in stable_ci[param_type]:
+        return stable_ci
+    else:
+        raise Exception("Invalid parameters {0}, {1}".format(
+            param_type, param))
+
+
+def _get_jobs_list(param_type):
+    master_ci = app.config["MASTER_CI"]
+    stable_ci = app.config["STABLE_CI"]
+
+    return sorted(master_ci[param_type] + stable_ci[param_type],
+                  reverse=True)
+
+
 @iso_bp.route('/<version>')
 def iso(version):
     job = "{0}.all".format(version)
@@ -33,14 +54,16 @@ def iso(version):
         test_types = _get_iso_test_types(builds)
     else:
         test_types = []
+    ci = _get_ci_config("ISO_JOBS", version)
 
-    return flask.render_template("iso.html",
-                                 builds=builds,
-                                 test_types=test_types,
-                                 version=version,
-                                 jenkins=app.config['PRODUCT_JENKINS'],
-                                 jobs=app.config['STAGING_JOBS'],
-                                 versions=app.config['ISO_VERSIONS'])
+    return flask.render_template(
+        "iso.html",
+        builds=builds,
+        test_types=test_types,
+        version=version,
+        jenkins=ci["JENKINS"],
+        staging_jobs=_get_jobs_list("STAGING_JOBS"),
+        iso_jobs=_get_jobs_list("ISO_JOBS"))
 
 
 def _prepare_data_for_charts(top_n):
@@ -53,20 +76,21 @@ def _prepare_data_for_charts(top_n):
 
 @staging_bp.route('/<job>')
 def staging(job):
+    ci = _get_ci_config("STAGING_JOBS", job)
+
     builds = db.get_staging_builds(job)
     failed_builds = filter(lambda x: x['result'] == 'FAILURE', builds)
 
     metrics = stats.get_basic_stats(builds, failed_builds)
+    top_by_team = _prepare_data_for_charts(
+        stats.get_top_by_team(failed_builds))
 
-    top_by_target = _prepare_data_for_charts(stats.get_top_by_target(failed_builds))
-    top_by_team = _prepare_data_for_charts(stats.get_top_by_team(failed_builds))
-
-    return flask.render_template("staging.html",
-                                 job=job,
-                                 metrics=metrics,
-                                 builds=failed_builds,
-                                 jenkins=app.config['PRODUCT_JENKINS'],
-                                 jobs=app.config['STAGING_JOBS'],
-                                 versions=app.config['ISO_VERSIONS'],
-                                 top_by_target=top_by_target,
-                                 top_by_team=top_by_team)
+    return flask.render_template(
+        "staging.html",
+        job=job,
+        metrics=metrics,
+        builds=failed_builds,
+        jenkins=ci["JENKINS"],
+        staging_jobs=_get_jobs_list("STAGING_JOBS"),
+        iso_jobs=_get_jobs_list("ISO_JOBS"),
+        top_by_team=top_by_team)

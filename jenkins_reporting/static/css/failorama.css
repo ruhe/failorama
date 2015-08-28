@@ -56,12 +56,8 @@ th {
         text-align: center !important;
 }
 
-#top_by_target svg {
-  height: 280px;
-}
-
 #top_by_team svg {
-  height: 280px;
+  height: 340px;
 }
 
 .footer {

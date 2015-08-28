@@ -20,17 +20,19 @@ class Config(object):
     # Override these in /etc/failorama/failorama.conf #
     ###################################################
 
-    # Jenkins URL
-    PRODUCT_JENKINS = ''
+    MASTER_CI = {
+        "JENKINS": "",
+        "STAGING_JOBS": [],
+        "ISO_JOBS": []
+    }
 
-    # example: ['1.0', '1.1']
-    ISO_VERSIONS = []
+    STABLE_CI = {
+        "JENKINS": "",
+        "STAGING_JOBS": [],
+        "ISO_JOBS": []
+    }
 
-    # example: ['some_cache_job']
     IGNORED_ISO_JOBS = []
-
-    # example ['1.1.test_staging_mirror', '1.0.test_staging_mirror']
-    STAGING_JOBS = []
 
 
 class Testing(Config):

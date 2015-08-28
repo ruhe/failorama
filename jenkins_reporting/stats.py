@@ -3,17 +3,6 @@ from datetime import datetime
 
 from flask import current_app as app
 
-def get_top_by_target(staging_builds):
-    counter = collections.defaultdict(int)
-
-    for build in staging_builds:
-        for bug in build.get("bugs", []):
-            target = bug.get("target")
-            if target:
-                counter[target] += 1
-
-    return counter
-
 
 def _match_assignee_to_team(teams, assignee):
         for team, assignees in teams.items():

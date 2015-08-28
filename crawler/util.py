@@ -2,6 +2,7 @@ import datetime
 import os
 import re
 import requests
+import time
 
 URL_REGEX = re.compile(ur'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.]'
                        ur'[a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()'
@@ -80,3 +81,17 @@ def memoize(f):
 def file_abs_path(file_name, closes_file_path):
     dir_path = os.path.abspath(os.path.dirname(closes_file_path))
     return os.path.join(dir_path, file_name)
+
+
+def days_ago_timestamp(days):
+    now = datetime.date.today()
+    week_ago = now - datetime.timedelta(days=days)
+
+    ts = time.mktime(week_ago.timetuple())
+    return int(ts)
+
+
+def timestamp2str(ts):
+    # round timestamp to seconds
+    dt = datetime.datetime.fromtimestamp(ts)
+    return dt.strftime('%Y-%m-%d')

@@ -48,12 +48,12 @@
     <div class="col-lg-3">
         <div class="list-group" id="navbar">
             {{ render_menu_header('MOS ISO status') }}
-            {% for v in versions %}
+            {% for v in iso_jobs %}
                 {{ render_menu_item(url_for('iso.iso', version=v), v, v == version, 'iso') }}
             {% endfor %}
 
             {{ render_menu_header('Failed staging builds') }}
-            {% for j in jobs %}
+            {% for j in staging_jobs %}
                 {{ render_menu_item(url_for('staging.staging', job=j), j, j == job, 'staging') }}
             {% endfor %}
         </div>
